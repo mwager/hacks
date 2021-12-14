@@ -1,8 +1,9 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [CLI commands & important Hacks](#cli-commands--important-hacks)
-  - [Linux command line stuff](#linux-command-line-stuff)
+- [Important CLI commands & hacks for fun and profit](#important-cli-commands--hacks-for-fun-and-profit)
+  - [Google searches](#google-searches)
+  - [Command line stuff](#command-line-stuff)
     - [Basics](#basics)
       - [Important folders and files](#important-folders-and-files)
       - [GDB](#gdb)
@@ -10,17 +11,20 @@
     - [Discs & Forensics](#discs--forensics)
       - [Info about disks & their sizes](#info-about-disks--their-sizes)
       - [WIPE a disk (CAUTION)](#wipe-a-disk-caution)
-      - [Copy/Backup files or disks:](#copybackup-files-or-disks)
+      - [Copy/Backup files or disks](#copybackup-files-or-disks)
       - [Hash sums](#hash-sums)
-    - [Google searches](#google-searches)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# CLI commands & important Hacks
+# Important CLI commands & hacks for fun and profit
 
 This document contains important cli commands, pen testing tools, forensic hacks and more!
 
-## Linux command line stuff
+## Google searches
+
+`site:iu-fernstudium.de inurl:wp-admin`
+
+## Command line stuff
 
 ### Basics
 
@@ -321,7 +325,7 @@ $ dc3dd wipe=/dev/sdb
 $ xxd -a /dev/sdb
 ```
 
-#### Copy/Backup files or disks:
+#### Copy/Backup files or disks
 
 ```bash
 $ dd if=/dev/sda of=/path/to/my/backup
@@ -337,7 +341,3 @@ $ dc3dd if=/dev/sda hof=/path/to/my/backup.raw hash=sha256
 ```bash
 $ sha256sum package.json
 ```
-
-### Google searches
-
-`site:iu-fernstudium.de inurl:wp-admin`
