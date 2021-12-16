@@ -3,18 +3,20 @@
 
 - [Important CLI commands & hacks for fun and profit](#important-cli-commands--hacks-for-fun-and-profit)
   - [Google searches](#google-searches)
+  - [Kali USB bootable](#kali-usb-bootable)
   - [Command line stuff](#command-line-stuff)
     - [Important folders and files](#important-folders-and-files)
-    - [Basics & Networking](#basics--networking)
-    - [Network stuff](#network-stuff)
+    - [Basics](#basics)
+    - [Networking](#networking)
     - [Discs & Forensics](#discs--forensics)
       - [Info about disks & their sizes](#info-about-disks--their-sizes)
       - [Copy/Backup files or disks](#copybackup-files-or-disks)
       - [WIPE a disk (CAUTION)](#wipe-a-disk-caution)
       - [Filesystems](#filesystems)
       - [Recover data](#recover-data)
+      - [Sleuth Kit](#sleuth-kit)
+      - [log2timeline](#log2timeline)
       - [RAM](#ram)
-      - [OSX](#osx)
     - [GDB](#gdb)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -25,7 +27,12 @@ This document contains important cli commands, pen testing tools, forensic hacks
 
 ## Google searches
 
-`site:iu-fernstudium.de inurl:wp-admin`
+`site:foo.de inurl:wp-admin`
+
+## Kali USB bootable
+
+- https://gist.github.com/malixsys/97b35ed8899a99561b19da9a1dcfa96c
+- https://linuxconfig.org/make-a-kali-linux-persistent-usb
 
 ## Command line stuff
 
@@ -39,24 +46,58 @@ This document contains important cli commands, pen testing tools, forensic hacks
 less  /usr/share/wordlists/rockyou.txt # good for passwords (kali)
 ```
 
-### Basics & Networking
+### Basics
 
 ```bash
+# german keyboard layout
+setxkbmap -layout de # -> move to ~/.bash_rc
+
+# word count
+wc -w hacks.md
+
 # find stuff
 locate stuff
-find / -name "stuff"
-find /Volumes -name "*.js"
-
-# find files by content
-egrep -ir --include=*.{php,html,js} "(document.cookie|setcookie)" .
-find /Volumes -type f -name "*.php" -o -name "*.html" -o -name "*.js" | \
- xargs egrep -i '(document\.cookie|console.log)'| less
+find /some/path/ -name "stuff"
+find /some/path/ -name "*.js"
 
 # SUID bit - find binaries with the SUID bit set
 find / -perm -4000 -type f 2>/dev/null
 
+# find files by content
+egrep -ir --include=*.{php,html,js} "(document.cookie|setcookie)" /some/path/
+find /some/path/ -type f -name "*.php" -o -name "*.html" -o -name "*.js" | \
+ xargs egrep -i '(document\.cookie|console.log)'| less
+
+# find content in files
+egrep 'some-string' hacks.md
+# search domains
+egrep '(www\.)?.*\.[a-z]{2,6}(\.[a-z]{2,4})?' hacks.md
+# search IP addresses
+egrep '([0-9]{1,3}\.){3}[0-9]{1,3}' hacks.md
+
+# file info: (is it really a txt file?)
+file ~/Desktop/foo.txt
+/Users/foo/Desktop/foo.txt: PDF document, version 1.3 # (😁 pdf was just renamed to foo.txt)
+
+# time stuff
+uptime
+date
+uptime
+
+# execute stuff with timeout
+timeout 10 ping foo.de
+
 # hashsums
 sha256sum package.json
+
+# random numbers
+echo $RANDOM
+
+# execute in background
+stress-ng --cpu 2 &
+...do other stuff
+# bring it back to foreground to kill it
+fg
 
 # Restart services
 service apache2 restart
@@ -74,7 +115,7 @@ tr "A-Za-z" "N-ZA-Mn-za-m" < text.txt > encrypted.txt
 tr "A-Za-z" "N-ZA-Mn-za-m" < encrypted.txt > text.txt
 ```
 
-### Network stuff
+### Networking
 
 ```bash
 hostname -A
@@ -116,10 +157,14 @@ ss -lun
 # Which process is listening in port 4444
 lsof -i tcp:4444
 
-# time stuff
-uptime
-date
-uptime
+# SSL certificates
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt -config configs/server.conf
+
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout client.key -out client.crt -config configs/client.conf
+
+# infos about the certs
+openssl x509 -in server.crt -text -noout
+openssl x509 -in client.crt -text -noout
 
 # ALSO CHECK NETCAT (nc) BELOW!
 
@@ -165,6 +210,9 @@ nmap -v -A -sV scanme.nmap.org
 # nmap scannt per default 1000 well known ports!
 # Scann ALL PORTS:
 sudo nmap -A -sV -T5 10.5.123.0/24 -p- # also "-p-"
+
+# execute a SYN flooding attack
+sudo timeout 10 hping3 -S --flood 192.168.13.13
 
 # get ip and mac of neighbour
 ip neigh
@@ -328,7 +376,9 @@ du -sh /some/path
 > 42G	/some/path
 
 # OSX
-diskutil list
+# Output all devices
+diskutil list # also spits out the mount names (e.g. "Macintosh HD" or "USBSTICK")
+diskutil unmountDisk /dev/disk2
 
 # Get partitions of a disk
 sudo fdisk -l /dev/sda
@@ -346,7 +396,7 @@ dd if=/dev/sda of=/path/to/my/backup
 # forensics extension of dd (e.g. hashing check auto!)
 dc3dd if=/dev/sda hof=/path/to/my/backup.raw hash=sha256
 
--> fdkimager is GUI & free (win only)
+# -> FTK Imager is GUI & free (win only)
 
 # over ssh - copy stuff encrypted and gzipped to my ssh server
 dd if=/dev/sda | pv | gzip -c | ssh USER@IP "cat > sda.dd"
@@ -393,6 +443,19 @@ Tools for WIN: recuva, PC inspektor file recovery, DiskDigger, GlaryUndelete
 Tools for MAC: Disk Drill
 ```
 
+#### Sleuth Kit
+
+```bash
+# mmls - Display the partition layout of a volume system  (partition tables)
+mmls image.dd
+
+# ifind - Find the meta-data structure that has allocated a given disk unit or file name
+# icat - Output the contents of a file based on its inode number
+
+```
+
+#### log2timeline
+
 #### RAM
 
 ```bash
@@ -401,14 +464,6 @@ dd if=/dev/ram of=ram.dd
 # fmem: https://github.com/NateBrune/fmem
 # osx: MacMemoryReader
 # alternative via firewire (if pc locked (i.e. screensaver))
-```
-
-#### OSX
-
-```
-# Output all devices
-diskutil list # also spits out the mount names (e.g. "Macintosh HD" or "USBSTICK")
-diskutil unmountDisk /dev/disk2
 ```
 
 ### GDB
