@@ -2,8 +2,6 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Important CLI commands & hacks for fun and profit](#important-cli-commands--hacks-for-fun-and-profit)
-  - [Google searches](#google-searches)
-  - [Kali USB bootable](#kali-usb-bootable)
   - [Command line stuff](#command-line-stuff)
     - [Important folders and files](#important-folders-and-files)
     - [Basics](#basics)
@@ -17,22 +15,16 @@
       - [Sleuth Kit](#sleuth-kit)
       - [log2timeline](#log2timeline)
       - [RAM](#ram)
-    - [GDB](#gdb)
+  - [GDB](#gdb)
+  - [Bootable USB sticks](#bootable-usb-sticks)
+  - [Google searches](#google-searches)
+  - [data visualization via gnuplot](#data-visualization-via-gnuplot)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Important CLI commands & hacks for fun and profit
 
 This document contains important cli commands, pen testing tools, forensic hacks and more!
-
-## Google searches
-
-`site:foo.de inurl:wp-admin`
-
-## Kali USB bootable
-
-- https://gist.github.com/malixsys/97b35ed8899a99561b19da9a1dcfa96c
-- https://linuxconfig.org/make-a-kali-linux-persistent-usb
 
 ## Command line stuff
 
@@ -51,6 +43,9 @@ less  /usr/share/wordlists/rockyou.txt # good for passwords (kali)
 ```bash
 # german keyboard layout
 setxkbmap -layout de # -> move to ~/.bash_rc
+
+# get root in kali
+sudo bash
 
 # word count
 wc -w hacks.md
@@ -364,16 +359,20 @@ fstyp /dev/disk2s1 # partition meines usb sticks
 #### Info about disks & their sizes
 
 ```bash
+file usb.dd
+
 # mounted stuff
 mount -v
 ls /media # ls /Volumes
 
-df -H
-lsblk
-
 # Disk size
+df -H
 du -sh /some/path
-> 42G	/some/path
+
+# get disks and moutpoints
+lsblk
+# get devices nd vendor information
+lspci
 
 # OSX
 # Output all devices
@@ -405,6 +404,9 @@ dd if=/dev/sda | pv | gzip -c | ssh USER@IP "cat > sda.dd"
 # EWF (Expert witness format)
 ewfaquire -t image.dd image.E01
 ewfexport image.E01
+
+# Writeblocker software based windows:
+# https://www.youtube.com/watch?v=sOy0Sdyma3U
 ```
 
 #### WIPE a disk (CAUTION)
@@ -439,19 +441,32 @@ sudo dd if=/dev/disk2 of=ntfs.raw bs=512 count=1 skip=0
 Linux GUI for image analyse: dff (digital forensic framework) - similar to FTK imager
 
 ```bash
-Tools for WIN: recuva, PC inspektor file recovery, DiskDigger, GlaryUndelete
-Tools for MAC: Disk Drill
+# Tools for Linux:
+foremost usb.dd # auto extract deleted files
+# Autopsy: create image(dd or ftk imager) and then import it in autopsy.
+
+# Tools for WIN: recuva, PC inspektor file recovery, DiskDigger, GlaryUndelete
+# Tools for MAC: Disk Drill
 ```
 
 #### Sleuth Kit
 
 ```bash
 # mmls - Display the partition layout of a volume system  (partition tables)
-mmls image.dd
+mmls image.dd # also possible on EWF files: mmls image.E01
 
 # ifind - Find the meta-data structure that has allocated a given disk unit or file name
-# icat - Output the contents of a file based on its inode number
 
+# icat - Output the contents of a file based on its inode number
+# Example: get the MFT only
+icat -o 63 image.E01 0 > mft.raw
+
+# Then analyze the MFT:
+analyzeMFT.py -f mft.raw -o mftanalyzed.csv
+
+fls usb_stick.dd
+fdisk -lu usb.dd
+fsstat usb.dd
 ```
 
 #### log2timeline
@@ -466,7 +481,7 @@ dd if=/dev/ram of=ram.dd
 # alternative via firewire (if pc locked (i.e. screensaver))
 ```
 
-### GDB
+## GDB
 
 1. mit scp die binary auf kali host downloadn
 2. gdb ./flag-extramile4
@@ -501,3 +516,15 @@ WICHTIG: jne sprint wenn eax NICHT 0 is.
 deshalb setzen wir eax einfach hart auf 1 HAHAHAHHAHAH
 
 9. nun steppen bis wir den flag haben. NICE!!!
+
+## Bootable USB sticks
+
+- Use "rufus" for persietence: https://www.youtube.com/watch?v=n2olKupv9fY
+
+## Google searches
+
+`site:foo.de inurl:wp-admin`
+
+## data visualization via gnuplot
+
+See folder `./gnuplot`
