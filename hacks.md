@@ -12,7 +12,7 @@
       - [WIPE a disk (CAUTION)](#wipe-a-disk-caution)
       - [Filesystems](#filesystems)
       - [Recover data](#recover-data)
-      - [Sleuth Kit](#sleuth-kit)
+      - [The Sleuth Kit (TSK)](#the-sleuth-kit-tsk)
       - [log2timeline](#log2timeline)
       - [RAM](#ram)
   - [GDB](#gdb)
@@ -42,7 +42,7 @@ less  /usr/share/wordlists/rockyou.txt # good for passwords (kali)
 
 ```bash
 # german keyboard layout
-setxkbmap -layout de # -> move to ~/.bash_rc
+setxkbmap -layout de # -> move to ~/.bashrc
 
 # get root in kali
 sudo bash
@@ -108,6 +108,10 @@ cat /proc/version
 # caesar chiffre
 tr "A-Za-z" "N-ZA-Mn-za-m" < text.txt > encrypted.txt
 tr "A-Za-z" "N-ZA-Mn-za-m" < encrypted.txt > text.txt
+
+# Open files:
+open foo.txt # OSX
+display foo.txt # linux
 ```
 
 ### Networking
@@ -369,10 +373,17 @@ ls /media # ls /Volumes
 df -H
 du -sh /some/path
 
-# get disks and moutpoints
-lsblk
-# get devices nd vendor information
+
+lsblk # get disks and moutpoints
+
+# get devices and vendor information
 lspci
+
+# list all devices (hard dicks, usb sticks, cd rom drives)
+lsscsi
+
+# list hardware
+lshw
 
 # OSX
 # Output all devices
@@ -381,23 +392,31 @@ diskutil unmountDisk /dev/disk2
 
 # Get partitions of a disk
 sudo fdisk -l /dev/sda
+gdisk -l /dev/sdb
 
 # Get detailed infos about a disk
 sudo hdparm -I /dev/sda
 sudo ewfacquire /dev/sda
+
+tree /mnt/evidence
+# Making a List of Hashes
+find /mnt/evidence -type f -exec sha1sum {} \; > ~/analysis/sha1.filelist.txt
+
+# Making a List of File Types
+find /mnt/evidence -type f -exec file {} \; > ~/analysis/filetype.txt
 ```
 
 #### Copy/Backup files or disks
 
 ```bash
-dd if=/dev/sda of=/path/to/my/backup
+dd if=/dev/sda of=/path/to/my/backup bs=512 conv=noerror,sync
 
 # forensics extension of dd (e.g. hashing check auto!)
 dc3dd if=/dev/sda hof=/path/to/my/backup.raw hash=sha256
 
 # -> FTK Imager is GUI & free (win only)
 
-# over ssh - copy stuff encrypted and gzipped to my ssh server
+# over ssh - copy stuff !*encrypted*! and gzipped to my ssh server
 dd if=/dev/sda | pv | gzip -c | ssh USER@IP "cat > sda.dd"
 # also see sshfs ?!
 
@@ -449,7 +468,9 @@ foremost usb.dd # auto extract deleted files
 # Tools for MAC: Disk Drill
 ```
 
-#### Sleuth Kit
+#### The Sleuth Kit (TSK)
+
+See chapter 10.2 in the Linux LEO PDF: https://linuxleo.com/ and http://www.sleuthkit.org/
 
 ```bash
 # mmls - Display the partition layout of a volume system  (partition tables)
@@ -458,7 +479,8 @@ mmls image.dd # also possible on EWF files: mmls image.E01
 # ifind - Find the meta-data structure that has allocated a given disk unit or file name
 
 # icat - Output the contents of a file based on its inode number
-# Example: get the MFT only
+# Example: get the MFT only (63 is Start of NTFS from mmls)
+# See https://www.andreafortuna.org/2017/07/18/how-to-extract-data-and-timeline-from-master-file-table-on-ntfs-filesystem/
 icat -o 63 image.E01 0 > mft.raw
 
 # Then analyze the MFT:
