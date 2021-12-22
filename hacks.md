@@ -8,7 +8,7 @@
     - [Networking](#networking)
     - [Discs & Forensics](#discs--forensics)
       - [Info about disks & their sizes](#info-about-disks--their-sizes)
-      - [Copy/Backup files or disks](#copybackup-files-or-disks)
+      - [Copy/Backup files or disks / Creating forensic images](#copybackup-files-or-disks--creating-forensic-images)
       - [WIPE a disk (CAUTION)](#wipe-a-disk-caution)
       - [Filesystems](#filesystems)
       - [Recover data](#recover-data)
@@ -54,6 +54,7 @@ wc -w hacks.md
 locate stuff
 find /some/path/ -name "stuff"
 find /some/path/ -name "*.js"
+find /mnt/evid/ -type f # find (allocated) regular files
 
 # SUID bit - find binaries with the SUID bit set
 find / -perm -4000 -type f 2>/dev/null
@@ -112,6 +113,10 @@ tr "A-Za-z" "N-ZA-Mn-za-m" < encrypted.txt > text.txt
 # Open files:
 open foo.txt # OSX
 display foo.txt # linux
+
+# Archives: tar / zip
+tar tzf myfile.tar.gz # only display contents
+tar xzvf myfile.tar.gz # extract all stuff
 ```
 
 ### Networking
@@ -389,6 +394,7 @@ lshw
 # Output all devices
 diskutil list # also spits out the mount names (e.g. "Macintosh HD" or "USBSTICK")
 diskutil unmountDisk /dev/disk2
+# For more info on apple filesystems see HFS_TSK.pdf in this folder
 
 # Get partitions of a disk
 sudo fdisk -l /dev/sda
@@ -404,12 +410,19 @@ find /mnt/evidence -type f -exec sha1sum {} \; > ~/analysis/sha1.filelist.txt
 
 # Making a List of File Types
 find /mnt/evidence -type f -exec file {} \; > ~/analysis/filetype.txt
+
+# search for string in an image
+grep -abi cyberbullying ewfmnt/ewf1
+# use tr to convert the set of control characters (’[:cntrl:]’) to newlines (’\n’).
+tr '[:cntrl:]'  '\n' < ewfmnt/ewf1 | grep -abi cyberbullying
+
+# Also see bulk_extractor! (e.g. in Linux leo)
 ```
 
-#### Copy/Backup files or disks
+#### Copy/Backup files or disks / Creating forensic images
 
 ```bash
-dd if=/dev/sda of=/path/to/my/backup bs=512 conv=noerror,sync
+dd if=/dev/sda of=/path/to/my/backup bs=512 conv=noerror,sync [status=progress] # ==> press ctrl + t to see progress
 
 # forensics extension of dd (e.g. hashing check auto!)
 dc3dd if=/dev/sda hof=/path/to/my/backup.raw hash=sha256
@@ -460,12 +473,23 @@ sudo dd if=/dev/disk2 of=ntfs.raw bs=512 count=1 skip=0
 Linux GUI for image analyse: dff (digital forensic framework) - similar to FTK imager
 
 ```bash
+# Tools for WIN: recuva, PC inspektor file recovery, DiskDigger, GlaryUndelete
+# Tools for MAC: Disk Drill
+
 # Tools for Linux:
 foremost usb.dd # auto extract deleted files
 # Autopsy: create image(dd or ftk imager) and then import it in autopsy.
-
-# Tools for WIN: recuva, PC inspektor file recovery, DiskDigger, GlaryUndelete
-# Tools for MAC: Disk Drill
+# The Sleuth Kit (TSK)
+# See Linux LEO from chapter 10.2
+# Ex: show all deleted files in a ntfs image
+fls -o 2048 -Frd NTFS_Pract_2017.E01
+# OUTPUT (notice the number 219)
+-/r * 219-128-2:	Users/AlbertE/Pictures/Tails/GemoTailG4.jpg
+# get MFT info like standard info attribute etc
+istat -o 2048 NTFS_Pract_2017.E01 219
+# Now lets recover that deleted file:
+icat -o 2048 NTFS_Pract_2017.E01 219 | file - # check file type
+icat -o 2048 NTFS_Pract_2017.E01 219 > image.jpg # create a file from extracted content 😍
 ```
 
 #### The Sleuth Kit (TSK)
@@ -473,6 +497,9 @@ foremost usb.dd # auto extract deleted files
 See chapter 10.2 in the Linux LEO PDF: https://linuxleo.com/ and http://www.sleuthkit.org/
 
 ```bash
+# which filesystems are supported by TSK?
+istat -f list
+
 # mmls - Display the partition layout of a volume system  (partition tables)
 mmls image.dd # also possible on EWF files: mmls image.E01
 
@@ -489,6 +516,11 @@ analyzeMFT.py -f mft.raw -o mftanalyzed.csv
 fls usb_stick.dd
 fdisk -lu usb.dd
 fsstat usb.dd
+
+# Mounting EWF Fles with ewfmount (See linux leo 8.12.9)
+ewfverify NTFS_Pract_2017.E01
+ewfmount NTFS_Pract_2017.E01 /mnt/ewf
+mount -o ro,loop,offset=$((2048*512))  /mnt/ewf/ewf1 /mnt/evid
 ```
 
 #### log2timeline
