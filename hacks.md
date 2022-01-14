@@ -378,7 +378,6 @@ ls /media # ls /Volumes
 df -H
 du -sh /some/path
 
-
 lsblk # get disks and moutpoints
 
 # get devices and vendor information
@@ -403,6 +402,10 @@ gdisk -l /dev/sdb
 # Get detailed infos about a disk
 sudo hdparm -I /dev/sda
 sudo ewfacquire /dev/sda
+# detailed infos (last mount time, block size, block groups etc)
+sudo fsstat -o 0 /dev/sdc # hier here offset 0. maybe before mmls on the disk
+sudo dumpe2fs /dev/sdc
+
 
 tree /mnt/evidence
 # Making a List of Hashes
@@ -469,6 +472,7 @@ sudo dd if=/dev/disk2 of=ntfs.raw bs=512 count=1 skip=0
 ```
 
 #### Recover data
+See also: https://github.com/mwager/ext3-seminararbeit
 
 Linux GUI for image analyse: dff (digital forensic framework) - similar to FTK imager
 
