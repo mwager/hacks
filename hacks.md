@@ -365,6 +365,47 @@ mount -t hfs /dev/disk2s1 /tmp
 fstyp /dev/disk2s1 # partition meines usb sticks
 ```
 
+#### Linux disk encryption (cryptsetup & LUKS "Linux Unified Key Setup")
+
+LUKS (Linux Unified Key Setup) is a cross distribution, kernel based disk encryption standard. A central component of which is that all necessary setup information is stored within the format header; giving full decryption portability.
+
+```
+sudo bash
+# create container
+dd if=/dev/urandom of=container.enc bs=1M count=32
+
+# create random key of 32 byte (256 bits) :-)
+dd if=/dev/urandom of=keyfile.key bs=32 count=1
+
+# Use luksFormat to initialize the file container with LUKS and your key file:
+cryptsetup -q -v luksFormat container.enc keyfile.key
+
+# OPEN your LUKS file container container.enc and map it to the virtual device dm_enc.
+# Will create it inside "/dev/mapper"
+cryptsetup -v -d keyfile.key luksOpen container.enc dm_enc
+
+# check status:
+cryptsetup status /dev/mapper/dm_enc
+
+# create an ext2 FS (only needed once. sobald created einfach immer: luksOpen+mount und unmount+luksClose)
+mke2fs /dev/mapper/dm_enc
+
+# mount it
+mkdir /mnt/enc_con
+mount /dev/mapper/dm_enc /mnt/enc_con
+
+# size of container vs size of partition/encr. disk:
+ls -lah container.enc
+fdisk -l /dev/mapper/dm_enc
+df -hT /dev/mapper/dm_enc
+
+# close/remove all
+umount /mnt/enc_con
+rm -r /mnt/enc_con
+cryptsetup luksClose dm_enc
+rm container.enc keyfile.key
+```
+
 #### Info about disks & their sizes
 
 ```bash
