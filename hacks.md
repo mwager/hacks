@@ -109,6 +109,10 @@ cat /proc/version
 # caesar chiffre
 tr "A-Za-z" "N-ZA-Mn-za-m" < text.txt > encrypted.txt
 tr "A-Za-z" "N-ZA-Mn-za-m" < encrypted.txt > text.txt
+# direct text encryption :D
+echo "Hallo Welt " | tr "A-Za-z" "N-ZA-Mn-za-m"
+echo "Unyyb Jryg" | tr "A-Za-z" "N-ZA-Mn-za-m"
+
 
 # Open files:
 open foo.txt # OSX
@@ -117,6 +121,40 @@ display foo.txt # linux
 # Archives: tar / zip
 tar tzf myfile.tar.gz # only display contents
 tar xzvf myfile.tar.gz # extract all stuff
+```
+
+### Linux User Management & Access Control
+
+- `chmod +rwx filename` # to add permissions.
+- `chmod -rwx directoryname` # to remove permissions.
+- `chmod +x filename` # to allow executable permissions.
+- `chmod -wx filename` # to take out write and executable permissions.
+
+User Management
+
+- `adduser`: add a user to the system
+- `deluser`: delete a user account and related files
+
+Relevant Files
+
+- `/etc/passwd` (user information)
+- `/etc/shadow` (protected passwords)
+
+Group Management
+
+- `addgroup`: add a group to the system
+- `delgroup`: remove a group from the system
+
+Relevant Files
+
+- `/etc/group` (group information)
+
+```bash
+# Access conrol lists
+# Then, limit the permissions of user bob to only reading by using ACLs:
+setfacl -m u:bob:xr logs
+# Check the configuration and the extended attributes:
+getfacl logs
 ```
 
 ### Networking
@@ -358,11 +396,19 @@ sqlmap -u example.com/login?user=a&pass=b
 strings /some/binary/fat.raw | less
 strings /dev/sdb | less
 
-# Mounting etc
-mount -t hfs /dev/disk2s1 /tmp
-
 # get filesystem
-fstyp /dev/disk2s1 # partition meines usb sticks
+fstyp /dev/disk2s1 # partition of a usb stick
+file /dev/disk2s1
+
+# Mounting
+mount -t hfs /dev/disk2s1 /tmp
+# Disk read-only? fix it:
+sudo hdparm -r0 /dev/sdb
+
+# Mount a raw hfs image in OSX
+0. sudo dd if=/dev/disk2 of=/Volumes/Backup2/olddisk.raw bs=8m conv=noerror,sync # ~13h for 500GB
+1. hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount /Volumes/Backup2/olddisk.raw
+2. in disk utils „aktivieren“ - all data accesible!
 ```
 
 #### Linux disk encryption (cryptsetup & LUKS "Linux Unified Key Setup")
