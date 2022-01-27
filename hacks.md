@@ -559,6 +559,7 @@ sudo dd if=/dev/disk2 of=ntfs.raw bs=512 count=1 skip=0
 ```
 
 #### Recover data
+
 See also: https://github.com/mwager/ext3-seminararbeit
 
 Linux GUI for image analyse: dff (digital forensic framework) - similar to FTK imager
@@ -582,6 +583,9 @@ istat -o 2048 NTFS_Pract_2017.E01 219
 icat -o 2048 NTFS_Pract_2017.E01 219 | file - # check file type
 icat -o 2048 NTFS_Pract_2017.E01 219 > image.jpg # create a file from extracted content 😍
 ```
+
+Manually carving files from NTFT Master file table (MFT:) (RunLists/Data runs)
+https://www.youtube.com/watch?v=AbApUDui8wM
 
 #### The Sleuth Kit (TSK)
 
