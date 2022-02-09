@@ -558,6 +558,9 @@ xxd -a /dev/sdb
 sudo dd if=/dev/disk2 of=ntfs.raw bs=512 count=1 skip=0
 ```
 
+FAT Analyse
+https://www.youtube.com/watch?v=lz83GavddB0
+
 #### Recover data
 
 See also: https://github.com/mwager/ext3-seminararbeit
