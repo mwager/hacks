@@ -195,9 +195,9 @@ ss -at
 # check open ports on a host
 ss -tln
 ss -lun
-
-# Which process is listening in port 4444
-lsof -i tcp:4444
+# osx/mac
+lsof -i tcp:4444 # Which process is listening in port 4444
+lsof -i -P | grep -i "listen" # check all open ports
 
 # SSL certificates
 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt -config configs/server.conf
