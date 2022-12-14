@@ -1,30 +1,10 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Important CLI commands & hacks for fun and profit](#important-cli-commands--hacks-for-fun-and-profit)
-  - [Command line stuff](#command-line-stuff)
-    - [Important folders and files](#important-folders-and-files)
-    - [Basics](#basics)
-    - [Networking](#networking)
-    - [Discs & Forensics](#discs--forensics)
-      - [Info about disks & their sizes](#info-about-disks--their-sizes)
-      - [Copy/Backup files or disks / Creating forensic images](#copybackup-files-or-disks--creating-forensic-images)
-      - [WIPE a disk (CAUTION)](#wipe-a-disk-caution)
-      - [Filesystems](#filesystems)
-      - [Recover data](#recover-data)
-      - [The Sleuth Kit (TSK)](#the-sleuth-kit-tsk)
-      - [log2timeline](#log2timeline)
-      - [RAM](#ram)
-  - [GDB](#gdb)
-  - [Bootable USB sticks](#bootable-usb-sticks)
-  - [Google searches](#google-searches)
-  - [data visualization via gnuplot](#data-visualization-via-gnuplot)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # Important CLI commands & hacks for fun and profit
 
 This document contains important cli commands, pen testing tools, forensic hacks and more!
+
+## Cheatsheets
+
+- https://github.com/nirvikagarwal/awesome-ctf-cheatsheet
 
 ## Command line stuff
 
@@ -71,6 +51,10 @@ egrep '(www\.)?.*\.[a-z]{2,6}(\.[a-z]{2,4})?' hacks.md
 # search IP addresses
 egrep '([0-9]{1,3}\.){3}[0-9]{1,3}' hacks.md
 
+grep -F 192.168.1.254 access.log
+# searches for any IP address in the 192.168.1.0/24 subnet
+grep -r 192\.168\.1\.[\d]{1,3} ./*
+
 # file info: (is it really a txt file?)
 file ~/Desktop/foo.txt
 /Users/foo/Desktop/foo.txt: PDF document, version 1.3 # (😁 pdf was just renamed to foo.txt)
@@ -113,6 +97,9 @@ tr "A-Za-z" "N-ZA-Mn-za-m" < encrypted.txt > text.txt
 echo "Hallo Welt " | tr "A-Za-z" "N-ZA-Mn-za-m"
 echo "Unyyb Jryg" | tr "A-Za-z" "N-ZA-Mn-za-m"
 
+# PGP encryption: https://pgptool.org/
+# Example: Encrypt with pubkey, then decrypt locally with my privkey:
+gpg --decrypt pgp-message.encrypted.txt
 
 # Open files:
 open foo.txt # OSX
@@ -121,6 +108,8 @@ display foo.txt # linux
 # Archives: tar / zip
 tar tzf myfile.tar.gz # only display contents
 tar xzvf myfile.tar.gz # extract all stuff
+# extract 7-zip files
+7z x FILENAME.7z -p'somePassw0rd' -o/home/kali
 ```
 
 ### Linux User Management & Access Control
@@ -160,6 +149,9 @@ getfacl logs
 ### Networking
 
 ```bash
+# "Mininet creates a realistic virtual network, running real kernel, switch and application code, on a single machine (VM, cloud or native), in seconds, with a single command"
+sudo mn --switch lxbr # see https://net.hs-augsburg.de/
+
 hostname -A
 ip addr
 nmcli
@@ -207,6 +199,9 @@ openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout client.key -out
 # infos about the certs
 openssl x509 -in server.crt -text -noout
 openssl x509 -in client.crt -text -noout
+
+# check certs of a website
+go run ssllabs-scan-v3.go --json-flat mwager.de
 
 # ALSO CHECK NETCAT (nc) BELOW!
 
@@ -284,8 +279,10 @@ nc -lnvp 4444 < /etc/passwd
 # client:
 nc IP PORT > some_file
 
-# scp
+# scp download folder
 scp -r UserName@SourceHost:SourceDirectoryPath TargetFolderName
+# scp upload folder
+scp -r /path/to/folder UserName@SourceHost:DestDirectoryPath
 
 # SHELL via nc ❤️❤️❤️
 # On Host:
@@ -335,6 +332,10 @@ mysql --host=10.5.134.178 --user=important_user --password=52991835a76dc17085dcf
 # Nikto Web Scanner
 # Scan web servers in search of vulnerabilities and common dangerous configurations
 nikto -h https://mwager.de
+
+# Fast and customisable vulnerability scanner based on simple YAML based DSL.
+# https://github.com/projectdiscovery/nuclei/
+nuclei
 
 # skipfish
 # Find vulnerabilities in web apps.
@@ -675,10 +676,13 @@ fls usb_stick.dd
 fdisk -lu usb.dd
 fsstat usb.dd
 
-# Mounting EWF Fles with ewfmount (See linux leo 8.12.9)
+# Mounting EWF Files with ewfmount (See linux leo 8.12.9)
 ewfverify NTFS_Pract_2017.E01
 ewfmount NTFS_Pract_2017.E01 /mnt/ewf
 mount -o ro,loop,offset=$((2048*512))  /mnt/ewf/ewf1 /mnt/evid
+
+ewfmount DC01_DW-disk1.e01 /mnt/DC01
+mount –o loop,ro,show_sys_files,streams_interface=windows /mnt/DC01/ewf1 /mnt/windows_mount
 ```
 
 #### log2timeline
