@@ -749,3 +749,11 @@ deshalb setzen wir eax einfach hart auf 1 HAHAHAHHAHAH
 ## data visualization via gnuplot
 
 See folder `./gnuplot`
+
+## Security Tools
+
+### SCA tool free: OWASP depscan: https://github.com/owasp-dep-scan/dep-scan
+
+depscan --src $PWD --reports-dir $PWD/reports
+
+
