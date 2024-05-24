@@ -6,6 +6,10 @@ This document contains important cli commands, pen testing tools, forensic hacks
 
 - https://github.com/nirvikagarwal/awesome-ctf-cheatsheet
 
+## Linux Audit Script
+
+- https://github.com/sokdr/LinuxAudit/blob/master/LinuxAudit.sh
+
 ## Command line stuff
 
 ### Important folders and files
