@@ -756,6 +756,8 @@ See folder `./gnuplot`
 
 ## Security Tools
 
+### SAST tool: https://semgrep.dev/login
+
 ### SCA tool free: OWASP depscan: https://github.com/owasp-dep-scan/dep-scan
 
 depscan --src $PWD --reports-dir $PWD/reports
