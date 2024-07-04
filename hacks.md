@@ -783,4 +783,6 @@ https://www.hexnode.com/mobile-device-management/help/script-to-enable-password-
 
 ```
 osascript -e 'tell application "System Events" to set require password to wake of security preferences to true'
+# lock screen:
+pmset displaysleepnow
 ```
