@@ -774,3 +774,13 @@ sudo docker rmi $(sudo docker images -q)
 sudo docker volume rm $(sudo docker volume ls -q)
 sudo docker network rm $(sudo docker network ls -q)
 ```
+
+## OSX stuff
+
+Require password immediately after locking screen or screensaver:
+
+https://www.hexnode.com/mobile-device-management/help/script-to-enable-password-for-screen-lock-on-mac/
+
+```
+osascript -e 'tell application "System Events" to set require password to wake of security preferences to true'
+```
