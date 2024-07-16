@@ -756,6 +756,10 @@ See folder `./gnuplot`
 
 ## Security Tools
 
+### 🔥🔥🔥 Search for security tools 🔥🔥🔥
+
+https://list.latio.tech/
+
 ### SAST tool: https://semgrep.dev/login
 
 ### SCA tool free: OWASP depscan: https://github.com/owasp-dep-scan/dep-scan
